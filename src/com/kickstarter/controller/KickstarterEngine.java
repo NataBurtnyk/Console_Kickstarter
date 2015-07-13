@@ -1,67 +1,72 @@
 package com.kickstarter.controller;
+
 import java.util.List;
 
 import com.kickstarter.model.Categories;
-import com.kickstarter.model.InMemoryCategories;
-import com.kickstarter.model.QuotesStorage;
 import com.kickstarter.model.Project;
-import com.kickstarter.model.ProjectsStorage;
+import com.kickstarter.model.Projects;
+import com.kickstarter.model.QuotesStorage;
 import com.kickstarter.model.Сategory;
-import com.kickstarter.view.ConsoleView;
-import com.kickstarter.view.InPut;
+import com.kickstarter.view.In;
+import com.kickstarter.view.View;
+import com.kickstarter.view.InPutConsole;
 
 public class KickstarterEngine {
 
-	private InPut inPut;
-	private ConsoleView consoleView;
+	private In inPut;
+	private View consoleView;
 	private QuotesStorage quotesStorage;
-	private Categories categories;
-	private ProjectsStorage projectsStorage;
+	private Categories categoriesStorage;
+	private Projects projectStorage;
 	
-	public KickstarterEngine(ConsoleView consoleView, QuotesStorage quotesStorage , InPut inPut, Categories categories, ProjectsStorage projects) {
+
+	public KickstarterEngine(View consoleView,
+			QuotesStorage quotesStorage, In inPut, Categories categories,
+			Projects projectStorage) {
+		
 		this.consoleView = consoleView;
 		this.inPut = inPut;
 		this.quotesStorage = quotesStorage;
-		this.categories = categories;
-		this.projectsStorage = projects;
+		this.categoriesStorage = categories;
+		this.projectStorage = projectStorage;
 	}
 
 	public void consolePart_1() {
-		System.out.print("\n" + "Please select category: ");
+		consoleView.select(1);
 		int input = inPut.readInput();
-		if(input > 0 && input <= categories.size()) {
-			Сategory category = categories.get(input);
+		if (input > 0 && input <= categoriesStorage.size()) {
+			Сategory category = categoriesStorage.get(input);
 			consoleView.displaySelectedCategory(category);
-			List<Project> projects = projectsStorage.getSpecificProjects(category);
-			consoleView.displayProjectsOfCategory(projects);	
+			List<Project> projects = projectStorage.getProjects(category);
+			consoleView.displayProjects(projects);
 			consolePart_2(category);
-		    consolePart_1();
+			consolePart_1();
 		} else {
-			System.out.println("Incorrect number. Please try again.");
+			consoleView.incorrect();
 			consolePart_1();
 		}
 	}
 
 	public void consolePart_2(Сategory сategory) {
-		System.out.print("(Press \"0\" - back to categories.)" + "\n" + "Select project: ");
+		consoleView.select(2);
 		int input = inPut.readInput();
-		if (input > 0 && input <= projectsStorage.getSizeProjectsOfCategory()) {
-			consoleView.displayCurrentProject(projectsStorage.getProject(input));
+		if (input > 0 && input <= projectStorage.getSize()) {
+			consoleView.displayProject(projectStorage.get(input));
 			consolePart_3(сategory);
 			consolePart_2(сategory);
 		} else if (input == 0) {
-			consoleView.displayListCategories(categories.getCategories());
+			consoleView.displayListCategories(categoriesStorage.getCategories());
 		} else {
-			System.out.println("Incorrect number. Please try again.");
+			consoleView.incorrect();
 			consolePart_2(сategory);
 		}
 	}
 
 	public void consolePart_3(Сategory category) {
-		System.out.print("\n" + "Press \"0\"  - back to projects: ");
+		consoleView.select(3);
 		int input = inPut.readInput();
 		if (input == 0) {
-			consoleView.displayProjectsOfCategory(projectsStorage.getSpecificProjects(category));
+			consoleView.displayProjects(projectStorage.getProjects(category));
 		} else {
 			consolePart_3(category);
 		}
@@ -70,7 +75,7 @@ public class KickstarterEngine {
 	public void run() {
 		consoleView.displayWelcome();
 		consoleView.displayQuote(quotesStorage.getRundomQuote());
-		consoleView.displayListCategories(categories.getCategories());
+		consoleView.displayListCategories(categoriesStorage.getCategories());
 		consolePart_1();
 	}
 }
